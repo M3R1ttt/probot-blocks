@@ -119,6 +119,8 @@ function App() {
   const codeElementRef = useRef<HTMLElement | null>(null)
   const [driverPassword, setDriverPassword] = useState(createSessionPassword)
   const driverPasswordRef = useRef(driverPassword)
+  const [projectName, setProjectName] = useState('Probot Projesi')
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const removeNotification = (id: number) => {
     setNotifications((prev) => prev.filter((item) => item.id !== id))
@@ -516,15 +518,7 @@ function App() {
   }
 
   const handleDownload = () => {
-    const blob = new Blob([code], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'probot-sketch.ino'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+    downloadBlob(code, 'probot-sketch.ino', 'text/plain')
     pushNotification('success', '.ino dosyası indirildi.')
   }
 
@@ -538,6 +532,85 @@ function App() {
     const raw = event.target.value.toUpperCase()
     const sanitized = raw.replace(/[^A-Z0-9-]/g, '').slice(0, 16)
     setDriverPassword(sanitized)
+  }
+
+  const handleProjectNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setProjectName(event.target.value)
+  }
+
+  const downloadBlob = (content: string, filename: string, mime: string) => {
+    const blob = new Blob([content], { type: mime })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleDownloadBlocks = () => {
+    if (!workspaceRef.current) {
+      return
+    }
+    const workspaceState = Blockly.serialization.workspaces.save(workspaceRef.current)
+    const payload = {
+      format: 'probot-blocks',
+      version: 1,
+      projectName: projectName.trim() || 'Probot Projesi',
+      generatedAt: new Date().toISOString(),
+      driverPassword: driverPasswordRef.current,
+      workspace: workspaceState,
+    }
+    const slug = (projectName || 'probot-projesi')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+    const filename = slug ? `${slug}.probot.json` : 'probot-project.probot.json'
+    downloadBlob(JSON.stringify(payload, null, 2), filename, 'application/json')
+    pushNotification('success', 'Blok projesi indirildi.')
+  }
+
+  const handleTriggerImport = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleImportBlocks = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+      const workspaceData = data?.workspace ?? data
+
+      if (data?.projectName && typeof data.projectName === 'string') {
+        setProjectName(data.projectName)
+      }
+
+      if (data?.driverPassword && typeof data.driverPassword === 'string') {
+        setDriverPassword(data.driverPassword.toUpperCase())
+      }
+
+      if (workspaceRef.current) {
+        workspaceRef.current.clear()
+        Blockly.serialization.workspaces.load(workspaceData, workspaceRef.current)
+        const regenerated = generateProbotCode(
+          workspaceRef.current,
+          driverPasswordRef.current,
+        )
+        setCode(regenerated)
+        pushNotification('success', 'Blok projesi yüklendi.')
+      }
+    } catch (error) {
+      console.error('Blok projesi yüklenemedi', error)
+      pushNotification('error', 'Blok projesi yüklenemedi.')
+    } finally {
+      event.target.value = ''
+    }
   }
 
   useEffect(() => {
@@ -618,13 +691,34 @@ function App() {
             <p>probot-lib ile uyumlu blok tabanlı kodlama aracı</p>
           </div>
         </div>
+        <div className="project-name">
+          <label>
+            <span>Proje adı</span>
+            <input
+              value={projectName}
+              onChange={handleProjectNameChange}
+              placeholder="Probot Projesi"
+              spellCheck={false}
+              maxLength={60}
+            />
+          </label>
+        </div>
         <div className="header-actions">
           <button className="primary" onClick={handleCopyCode}>
             Kodu kopyala
           </button>
           <button onClick={handleDownload}>.ino indir</button>
+          <button onClick={handleDownloadBlocks}>Blokları indir</button>
+          <button onClick={handleTriggerImport}>Blokları yükle</button>
         </div>
       </header>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json"
+        onChange={handleImportBlocks}
+        style={{ display: 'none' }}
+      />
       <main className={`app-main${isResizing ? ' resizing' : ''}`} ref={mainRef} style={mainStyle}>
         <div className="blockly-wrapper" ref={blocklyRef} />
         <div className="resize-handle" onMouseDown={startResize} />

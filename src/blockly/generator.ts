@@ -74,14 +74,17 @@ javascriptGenerator.forBlock['controls_repeat_ext'] = function (block) {
   return `for (int ${loopVar} = 0; ${loopVar} < ${repeats}; ${loopVar}++) {\n${branch}}\n`
 }
 
-export const generateProbotCode = (workspace: Blockly.Workspace) => {
+export const generateProbotCode = (workspace: Blockly.Workspace, password = 'ProBot1234') => {
   javascriptGenerator.init(workspace)
 
   const prologue = [
     '// Generated with Probot Blocks',
     '',
     '#include <Arduino.h>',
-    '// TODO: Gerekli Probot kütüphanelerini ekleyin',
+    '#include <probot.h>',
+    '',
+    `PROBOT_SET_DRIVER_STATION_PASSWORD("${password.replace(/"/g, '\\"')}");`,
+    '// TODO: Şifreyi ve gerekli ek kütüphaneleri ihtiyaçlarınıza göre güncelleyin',
   ]
 
   const sections = lifecycleOrder.map(({ type, signature }) => {

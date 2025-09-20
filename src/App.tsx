@@ -17,6 +17,26 @@ delete (locale as { default?: unknown }).default
 hljs.registerLanguage('cpp', cpp)
 Blockly.setLocale(locale)
 
+const createSessionPassword = () => {
+  const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+  const bytes = new Uint32Array(6)
+  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+    window.crypto.getRandomValues(bytes)
+  } else {
+    for (let i = 0; i < bytes.length; i += 1) {
+      bytes[i] = Math.floor(Math.random() * charset.length)
+    }
+  }
+  let result = 'PB-'
+  for (let i = 0; i < bytes.length; i += 1) {
+    result += charset[bytes[i] % charset.length]
+    if (i === 2) {
+      result += '-'
+    }
+  }
+  return result
+}
+
 const probotTheme = Blockly.Theme.defineTheme('probot-theme', {
   name: 'probot-theme',
   base: Blockly.Themes.Classic,
@@ -97,6 +117,8 @@ function App() {
   const notificationTimers = useRef<Record<number, number>>({})
   const [notifications, setNotifications] = useState<Notification[]>([])
   const codeElementRef = useRef<HTMLElement | null>(null)
+  const [driverPassword, setDriverPassword] = useState(createSessionPassword)
+  const driverPasswordRef = useRef(driverPassword)
 
   const removeNotification = (id: number) => {
     setNotifications((prev) => prev.filter((item) => item.id !== id))
@@ -239,6 +261,10 @@ function App() {
   const mainStyle = useMemo(() => ({ '--side-panel-width': `${panelWidth}px` } as CSSProperties), [panelWidth])
 
   useEffect(() => {
+    driverPasswordRef.current = driverPassword
+  }, [driverPassword])
+
+  useEffect(() => {
     Blockly.setLocale(locale)
     registerProbotBlocks()
 
@@ -284,7 +310,7 @@ function App() {
     })
 
     const updateCode = () => {
-      const generated = generateProbotCode(workspace)
+      const generated = generateProbotCode(workspace, driverPasswordRef.current)
       setCode(generated)
     }
 
@@ -323,6 +349,13 @@ function App() {
     element.innerHTML = highlighted.value
     element.classList.add('hljs')
   }, [code])
+
+  useEffect(() => {
+    if (workspaceRef.current) {
+      const generated = generateProbotCode(workspaceRef.current, driverPassword)
+      setCode(generated)
+    }
+  }, [driverPassword])
 
   const handleCopyCode = async () => {
     try {
@@ -369,7 +402,13 @@ function App() {
     URL.revokeObjectURL(url)
     pushNotification('success', '.ino dosyası indirildi.')
   }
-  
+
+  const handleRegeneratePassword = () => {
+    const nextPassword = createSessionPassword()
+    setDriverPassword(nextPassword)
+    pushNotification('success', 'Yeni Driver Station şifresi oluşturuldu.')
+  }
+
   useEffect(() => {
     return () => {
       Object.values(notificationTimers.current).forEach((timeoutId) => clearTimeout(timeoutId))
@@ -462,6 +501,13 @@ function App() {
           <section className="code-preview">
             <div className="section-header">
               <h2>Kod Önizleme</h2>
+            </div>
+            <div className="password-chip" aria-live="polite">
+              <div className="password-chip-text">
+                <span>Driver Station şifresi</span>
+                <strong>{driverPassword}</strong>
+              </div>
+              <button onClick={handleRegeneratePassword}>Şifreyi yenile</button>
             </div>
             <pre>
               <code ref={codeElementRef} className="language-cpp" />

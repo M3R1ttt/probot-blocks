@@ -20,7 +20,7 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 1.6rem;
 }
 
 .brand img {
@@ -175,6 +175,49 @@ button.primary:hover {
   min-height: 0;
 }
 
+.password-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  background-color: rgba(0, 32, 77, 0.08);
+  color: #00204d;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.password-chip-text span {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 32, 77, 0.56);
+  margin-bottom: 0.15rem;
+}
+
+.password-chip-text strong {
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+}
+
+.password-chip button {
+  border-radius: 999px;
+  border: 1px solid rgba(0, 32, 77, 0.18);
+  background-color: #e5e4e2;
+  color: #00204d;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.password-chip button:hover {
+  background-color: #d7d6d3;
+}
+
 .code-preview code {
   font-family: 'Source Code Pro', Consolas, 'Courier New', monospace;
   font-size: 0.92rem;
@@ -243,6 +286,11 @@ button.primary:hover {
   .side-panel section {
     flex: 1 1 260px;
   }
+
+  .password-chip {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 @media (max-width: 720px) {
@@ -254,7 +302,7 @@ button.primary:hover {
   .brand {
     width: 100%;
     justify-content: flex-start;
-    gap: 0.7rem;
+    gap: 1.3rem;
     margin-bottom: 0.6rem;
   }
 

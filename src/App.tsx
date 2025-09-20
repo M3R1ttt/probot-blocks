@@ -159,6 +159,52 @@ function App() {
                 },
               },
             },
+            {
+              kind: 'block',
+              type: 'controls_whileUntil',
+              fields: {
+                MODE: 'WHILE',
+              },
+            },
+            { kind: 'block', type: 'controls_flow_statements' },
+            {
+              kind: 'block',
+              type: 'controls_for',
+              inputs: {
+                FROM: {
+                  block: {
+                    type: 'math_number',
+                    fields: { NUM: 0 },
+                  },
+                },
+                TO: {
+                  block: {
+                    type: 'math_number',
+                    fields: { NUM: 10 },
+                  },
+                },
+                BY: {
+                  block: {
+                    type: 'math_number',
+                    fields: { NUM: 1 },
+                  },
+                },
+              },
+            },
+            {
+              kind: 'block',
+              type: 'controls_forEach',
+              inputs: {
+                LIST: {
+                  block: {
+                    type: 'lists_create_with',
+                    extraState: {
+                      itemCount: 2,
+                    },
+                  },
+                },
+              },
+            },
           ],
         },
         {
@@ -169,6 +215,9 @@ function App() {
             { kind: 'block', type: 'logic_compare' },
             { kind: 'block', type: 'logic_operation' },
             { kind: 'block', type: 'logic_boolean' },
+            { kind: 'block', type: 'logic_negate' },
+            { kind: 'block', type: 'logic_null' },
+            { kind: 'block', type: 'logic_ternary' },
           ],
         },
         {
@@ -198,6 +247,55 @@ function App() {
                 },
               },
             },
+            { kind: 'block', type: 'math_single' },
+            { kind: 'block', type: 'math_trig' },
+            { kind: 'block', type: 'math_round' },
+            { kind: 'block', type: 'math_modulo' },
+            { kind: 'block', type: 'math_constrain' },
+            { kind: 'block', type: 'math_number_property' },
+            { kind: 'block', type: 'math_random_int' },
+            { kind: 'block', type: 'math_random_float' },
+          ],
+        },
+        {
+          kind: 'category',
+          name: 'Listeler',
+          categorystyle: 'list_category',
+          contents: [
+            {
+              kind: 'block',
+              type: 'lists_create_with',
+              extraState: {
+                itemCount: 3,
+              },
+            },
+            { kind: 'block', type: 'lists_repeat' },
+            { kind: 'block', type: 'lists_length' },
+            { kind: 'block', type: 'lists_isEmpty' },
+            {
+              kind: 'block',
+              type: 'lists_indexOf',
+              fields: {
+                END: 'FIRST',
+              },
+            },
+            {
+              kind: 'block',
+              type: 'lists_getIndex',
+              fields: {
+                MODE: 'GET',
+                WHERE: 'FROM_START',
+              },
+            },
+            {
+              kind: 'block',
+              type: 'lists_setIndex',
+              fields: {
+                MODE: 'SET',
+                WHERE: 'FROM_START',
+              },
+            },
+            { kind: 'block', type: 'lists_getSublist' },
           ],
         },
         {
@@ -241,6 +339,18 @@ function App() {
                   block: {
                     type: 'text',
                     fields: { TEXT: 'Merhaba Probot' },
+                  },
+                },
+              },
+            },
+            {
+              kind: 'block',
+              type: 'arduino_serial_print_raw',
+              inputs: {
+                TEXT: {
+                  block: {
+                    type: 'text',
+                    fields: { TEXT: 'Probot' },
                   },
                 },
               },

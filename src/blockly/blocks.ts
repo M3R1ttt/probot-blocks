@@ -177,6 +177,21 @@ const customBlockDefinitions = [
     tooltip: 'Seri porta bir satır yazdırır.',
     helpUrl: '',
   },
+  {
+    type: 'arduino_serial_print_raw',
+    message0: 'Serial.print %1',
+    args0: [
+      {
+        type: 'input_value',
+        name: 'TEXT',
+      },
+    ],
+    previousStatement: null,
+    nextStatement: null,
+    colour: 10,
+    tooltip: 'Seri porta satır sonu olmadan yazar.',
+    helpUrl: '',
+  },
 ]
 
 let blocksRegistered = false

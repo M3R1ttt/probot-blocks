@@ -66,6 +66,11 @@ javascriptGenerator.forBlock['arduino_serial_print'] = function (block) {
   return `Serial.println(${text});\n`
 }
 
+javascriptGenerator.forBlock['arduino_serial_print_raw'] = function (block) {
+  const text = javascriptGenerator.valueToCode(block, 'TEXT', Order.NONE) || '""'
+  return `Serial.print(${text});\n`
+}
+
 javascriptGenerator.forBlock['controls_repeat_ext'] = function (block) {
   const repeats = javascriptGenerator.valueToCode(block, 'TIMES', Order.ASSIGNMENT) || '0'
   const branch = javascriptGenerator.statementToCode(block, 'DO')

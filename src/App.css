@@ -17,6 +17,18 @@
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.brand img {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+
 .app-header h1 {
   margin: 0;
   font-size: 1.45rem;
@@ -237,6 +249,13 @@ button.primary:hover {
   .app-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .brand {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 0.7rem;
+    margin-bottom: 0.6rem;
   }
 
   .header-actions {

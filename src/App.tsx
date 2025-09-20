@@ -2,14 +2,20 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
+import * as trLocale from 'blockly/msg/tr'
 import './App.css'
 import { lifecycleBlockOrder, generateProbotCode } from './blockly/generator'
 import { registerProbotBlocks } from './blockly/blocks'
+import nfrLogoWhite from '../nfr-logo-white.png'
 import hljs from 'highlight.js/lib/core'
 import cpp from 'highlight.js/lib/languages/cpp'
 import 'highlight.js/styles/atom-one-dark.css'
 
+const locale = { ...(trLocale as unknown as Record<string, string>) }
+delete (locale as { default?: unknown }).default
+
 hljs.registerLanguage('cpp', cpp)
+Blockly.setLocale(locale)
 
 const probotTheme = Blockly.Theme.defineTheme('probot-theme', {
   name: 'probot-theme',
@@ -85,7 +91,7 @@ function App() {
   const mainRef = useRef<HTMLDivElement | null>(null)
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null)
   const [code, setCode] = useState('')
-  const [panelWidth, setPanelWidth] = useState(300)
+  const [panelWidth, setPanelWidth] = useState(360)
   const [isResizing, setIsResizing] = useState(false)
   const notificationIdRef = useRef(0)
   const notificationTimers = useRef<Record<number, number>>({})
@@ -233,6 +239,7 @@ function App() {
   const mainStyle = useMemo(() => ({ '--side-panel-width': `${panelWidth}px` } as CSSProperties), [panelWidth])
 
   useEffect(() => {
+    Blockly.setLocale(locale)
     registerProbotBlocks()
 
     if (!blocklyRef.current) {
@@ -434,9 +441,12 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <div>
-          <h1>Probot Blocks</h1>
-          <p>probot-lib ile uyumlu blok tabanlı kodlama aracı</p>
+        <div className="brand">
+          <img src={nfrLogoWhite} alt="NFR" />
+          <div>
+            <h1>Probot Blocks</h1>
+            <p>probot-lib ile uyumlu blok tabanlı kodlama aracı</p>
+          </div>
         </div>
         <div className="header-actions">
           <button className="primary" onClick={handleCopyCode}>

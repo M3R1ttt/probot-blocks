@@ -188,18 +188,37 @@ button.primary:hover {
   font-weight: 600;
 }
 
-.password-chip-text span {
-  display: block;
+.password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex: 1 1 auto;
+}
+
+.password-field span {
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgba(0, 32, 77, 0.56);
-  margin-bottom: 0.15rem;
 }
 
-.password-chip-text strong {
-  font-size: 1rem;
+.password-field input {
+  border-radius: 6px;
+  border: 1px solid rgba(0, 32, 77, 0.25);
+  padding: 0.45rem 0.6rem;
+  font-size: 0.98rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
+  color: #00204d;
+  background-color: rgba(229, 228, 226, 0.6);
+  outline: none;
+  font-family: 'Source Code Pro', Consolas, 'Courier New', monospace;
+  text-transform: uppercase;
+}
+
+.password-field input:focus {
+  border-color: #00204d;
+  box-shadow: 0 0 0 2px rgba(0, 32, 77, 0.2);
 }
 
 .password-chip button {
@@ -290,6 +309,7 @@ button.primary:hover {
   .password-chip {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
 }
 

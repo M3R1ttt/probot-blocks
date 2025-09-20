@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
+import type { ChangeEvent, CSSProperties } from 'react'
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import * as trLocale from 'blockly/msg/tr'
@@ -261,7 +261,7 @@ function App() {
   const mainStyle = useMemo(() => ({ '--side-panel-width': `${panelWidth}px` } as CSSProperties), [panelWidth])
 
   useEffect(() => {
-    driverPasswordRef.current = driverPassword
+    driverPasswordRef.current = driverPassword || 'ProBot1234'
   }, [driverPassword])
 
   useEffect(() => {
@@ -352,7 +352,10 @@ function App() {
 
   useEffect(() => {
     if (workspaceRef.current) {
-      const generated = generateProbotCode(workspaceRef.current, driverPassword)
+      const generated = generateProbotCode(
+        workspaceRef.current,
+        driverPassword || 'ProBot1234',
+      )
       setCode(generated)
     }
   }, [driverPassword])
@@ -407,6 +410,12 @@ function App() {
     const nextPassword = createSessionPassword()
     setDriverPassword(nextPassword)
     pushNotification('success', 'Yeni Driver Station şifresi oluşturuldu.')
+  }
+
+  const handlePasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const raw = event.target.value.toUpperCase()
+    const sanitized = raw.replace(/[^A-Z0-9-]/g, '').slice(0, 16)
+    setDriverPassword(sanitized)
   }
 
   useEffect(() => {
@@ -503,10 +512,16 @@ function App() {
               <h2>Kod Önizleme</h2>
             </div>
             <div className="password-chip" aria-live="polite">
-              <div className="password-chip-text">
+              <label className="password-field">
                 <span>Driver Station şifresi</span>
-                <strong>{driverPassword}</strong>
-              </div>
+                <input
+                  value={driverPassword}
+                  onChange={handlePasswordChange}
+                  placeholder="ProBot1234"
+                  spellCheck={false}
+                  maxLength={16}
+                />
+              </label>
               <button onClick={handleRegeneratePassword}>Şifreyi yenile</button>
             </div>
             <pre>

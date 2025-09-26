@@ -11,6 +11,33 @@ import hljs from 'highlight.js/lib/core'
 import cpp from 'highlight.js/lib/languages/cpp'
 import 'highlight.js/styles/atom-one-dark.css'
 
+const COOKIE_KEYS = {
+  WORKSPACE: 'probot_workspace',
+  PROJECT_NAME: 'probot_project_name',
+  DRIVER_PASSWORD: 'probot_driver_password',
+  PANEL_WIDTH: 'probot_panel_width'
+}
+
+const getCookie = (name: string): string | null => {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) {
+    const cookieValue = parts.pop()?.split(';').shift()
+    return cookieValue ? decodeURIComponent(cookieValue) : null
+  }
+  return null
+}
+
+const setCookie = (name: string, value: string, days = 30) => {
+  const expires = new Date()
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`
+}
+
+const deleteCookie = (name: string) => {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`
+}
+
 const locale = { ...(trLocale as unknown as Record<string, string>) }
 delete (locale as { default?: unknown }).default
 
@@ -111,15 +138,24 @@ function App() {
   const mainRef = useRef<HTMLDivElement | null>(null)
   const workspaceRef = useRef<Blockly.WorkspaceSvg | null>(null)
   const [code, setCode] = useState('')
-  const [panelWidth, setPanelWidth] = useState(360)
+  const [panelWidth, setPanelWidth] = useState(() => {
+    const saved = getCookie(COOKIE_KEYS.PANEL_WIDTH)
+    return saved ? parseInt(saved, 10) : 360
+  })
   const [isResizing, setIsResizing] = useState(false)
   const notificationIdRef = useRef(0)
   const notificationTimers = useRef<Record<number, number>>({})
   const [notifications, setNotifications] = useState<Notification[]>([])
   const codeElementRef = useRef<HTMLElement | null>(null)
-  const [driverPassword, setDriverPassword] = useState(createSessionPassword)
+  const [driverPassword, setDriverPassword] = useState(() => {
+    const saved = getCookie(COOKIE_KEYS.DRIVER_PASSWORD)
+    return saved || createSessionPassword()
+  })
   const driverPasswordRef = useRef(driverPassword)
-  const [projectName, setProjectName] = useState('Probot Projesi')
+  const [projectName, setProjectName] = useState(() => {
+    const saved = getCookie(COOKIE_KEYS.PROJECT_NAME)
+    return saved || 'Probot Projesi'
+  })
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const removeNotification = (id: number) => {
@@ -436,10 +472,23 @@ function App() {
     const updateCode = () => {
       const generated = generateProbotCode(workspace, driverPasswordRef.current)
       setCode(generated)
+
+      const workspaceState = Blockly.serialization.workspaces.save(workspace)
+      setCookie(COOKIE_KEYS.WORKSPACE, JSON.stringify(workspaceState))
     }
 
     workspace.addChangeListener(updateCode)
     workspaceRef.current = workspace
+
+    const savedWorkspace = getCookie(COOKIE_KEYS.WORKSPACE)
+    if (savedWorkspace) {
+      try {
+        const workspaceData = JSON.parse(savedWorkspace)
+        Blockly.serialization.workspaces.load(workspaceData, workspace)
+      } catch (error) {
+        console.warn('Kaydedilmiş workspace yüklenemedi:', error)
+      }
+    }
 
     updateCode()
 
@@ -525,6 +574,7 @@ function App() {
   const handleRegeneratePassword = () => {
     const nextPassword = createSessionPassword()
     setDriverPassword(nextPassword)
+    setCookie(COOKIE_KEYS.DRIVER_PASSWORD, nextPassword)
     pushNotification('success', 'Yeni Driver Station şifresi oluşturuldu.')
   }
 
@@ -532,10 +582,13 @@ function App() {
     const raw = event.target.value.toUpperCase()
     const sanitized = raw.replace(/[^A-Z0-9-]/g, '').slice(0, 16)
     setDriverPassword(sanitized)
+    setCookie(COOKIE_KEYS.DRIVER_PASSWORD, sanitized)
   }
 
   const handleProjectNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setProjectName(event.target.value)
+    const newValue = event.target.value
+    setProjectName(newValue)
+    setCookie(COOKIE_KEYS.PROJECT_NAME, newValue)
   }
 
   const downloadBlob = (content: string, filename: string, mime: string) => {
@@ -638,6 +691,7 @@ function App() {
       let newWidth = bounds.right - event.clientX
       newWidth = Math.min(maxPanelWidth, Math.max(minPanelWidth, newWidth))
       setPanelWidth(newWidth)
+      setCookie(COOKIE_KEYS.PANEL_WIDTH, newWidth.toString())
       workspaceRef.current && Blockly.svgResize(workspaceRef.current)
     }
 

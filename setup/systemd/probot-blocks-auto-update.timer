@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Probot Blocks Auto-Update periodically
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=1min
+Unit=probot-blocks-auto-update.service
+
+[Install]
+WantedBy=timers.target 

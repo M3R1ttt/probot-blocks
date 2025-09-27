@@ -21,8 +21,8 @@ jobs:
             echo "Navigating to project directory"
             cd ${{ secrets.PROJECT_PATH }} || { echo "Failed to enter project directory"; exit 1; }
 
-            echo "Pulling latest changes from origin/main"
-            git pull origin main || { echo "Git pull failed"; exit 1; }
+            echo "Pulling latest changes from origin/stable"
+            git pull origin stable || { echo "Git pull failed"; exit 1; }
 
             echo "Stopping running containers"
             sudo docker compose down || { echo "Docker compose down failed"; exit 1; }

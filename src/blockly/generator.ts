@@ -2,12 +2,9 @@ import * as Blockly from 'blockly/core'
 import { javascriptGenerator, Order } from 'blockly/javascript'
 
 const getVariableName = (block: Blockly.Block, fieldName: string) => {
-  const nameDb = (javascriptGenerator as unknown as { nameDB_?: Blockly.Names }).nameDB_
-  if (nameDb) {
-    return nameDb.getName(block.getFieldValue(fieldName), Blockly.VARIABLE_CATEGORY_NAME)
-  }
-
-  return block.getFieldValue(fieldName)
+  const variableName = block.getFieldValue(fieldName)
+  // Use Blockly's proper API for variable name generation
+  return javascriptGenerator.getVariableName(variableName)
 }
 
 const lifecycleOrder: Array<{ type: string; signature: string }> = [
@@ -74,8 +71,8 @@ javascriptGenerator.forBlock['arduino_serial_print_raw'] = function (block) {
 javascriptGenerator.forBlock['controls_repeat_ext'] = function (block) {
   const repeats = javascriptGenerator.valueToCode(block, 'TIMES', Order.ASSIGNMENT) || '0'
   const branch = javascriptGenerator.statementToCode(block, 'DO')
-  const loopVar = ((javascriptGenerator as unknown as { nameDB_?: Blockly.Names }).nameDB_
-    ?.getDistinctName('index', Blockly.VARIABLE_CATEGORY_NAME)) ?? 'i'
+  // Use a simple counter variable name for C++ loops
+  const loopVar = 'i'
   return `for (int ${loopVar} = 0; ${loopVar} < ${repeats}; ${loopVar}++) {\n${branch}}\n`
 }
 

@@ -1,0 +1,41 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - stable
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Navigating to project directory"
+            cd ${{ secrets.PROJECT_PATH }} || { echo "Failed to enter project directory"; exit 1; }
+
+            echo "Pulling latest changes from origin/main"
+            git pull origin main || { echo "Git pull failed"; exit 1; }
+
+            echo "Stopping running containers"
+            sudo docker compose down || { echo "Docker compose down failed"; exit 1; }
+            echo "Containers stopped"
+
+            echo "Building docker images with no cache"
+            sudo docker compose build --no-cache || { echo "Docker build failed"; exit 1; }
+            echo "Docker images built"
+
+            echo "Starting containers in detached mode"
+            sudo docker compose up -d || { echo "Docker compose up failed"; exit 1; }
+            echo "Containers started"
+
+            echo "Cleaning up unused docker data (prune)"
+            sudo docker system prune -af || { echo "Docker system prune failed"; exit 1; }
+            echo "Docker system prune completed"

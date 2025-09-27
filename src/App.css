@@ -324,6 +324,11 @@ button.primary:hover {
 }
 
 @media (max-width: 1080px) {
+  .app {
+    height: auto;
+    overflow-y: auto;
+  }
+
   .app-main {
     flex-direction: column;
     gap: 0.75rem;
@@ -363,23 +368,38 @@ button.primary:hover {
 
   .brand {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: 1.3rem;
     margin-bottom: 0.6rem;
   }
 
+  .brand p {
+    display: none;
+  }
+
   .project-name {
     width: 100%;
-    padding: 0.45rem 0.7rem;
+    padding: 0rem;
+  }
+
+  .code-preview {
+    height: fit-content;
+  }
+
+  .project-name label span {
+    margin: 0.2rem 0.5rem;
   }
 
   .project-name input {
     min-width: 100%;
+    margin: 0.5rem;
   }
 
   .header-actions {
     width: 100%;
+    gap: 0.5rem;
   }
+  
 
   button {
     flex: 1;

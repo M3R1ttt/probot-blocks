@@ -34,9 +34,6 @@ const setCookie = (name: string, value: string, days = 30) => {
   document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`
 }
 
-const deleteCookie = (name: string) => {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`
-}
 
 const locale = { ...(trLocale as unknown as Record<string, string>) }
 delete (locale as { default?: unknown }).default
@@ -493,7 +490,9 @@ function App() {
     updateCode()
 
     const handleResize = () => {
-      workspaceRef.current && Blockly.svgResize(workspaceRef.current)
+      if (workspaceRef.current) {
+        Blockly.svgResize(workspaceRef.current)
+      }
     }
 
     window.addEventListener('resize', handleResize)
@@ -667,8 +666,9 @@ function App() {
   }
 
   useEffect(() => {
+    const currentTimers = notificationTimers.current
     return () => {
-      Object.values(notificationTimers.current).forEach((timeoutId) => clearTimeout(timeoutId))
+      Object.values(currentTimers).forEach((timeoutId) => clearTimeout(timeoutId))
     }
   }, [])
 
@@ -692,7 +692,9 @@ function App() {
       newWidth = Math.min(maxPanelWidth, Math.max(minPanelWidth, newWidth))
       setPanelWidth(newWidth)
       setCookie(COOKIE_KEYS.PANEL_WIDTH, newWidth.toString())
-      workspaceRef.current && Blockly.svgResize(workspaceRef.current)
+      if (workspaceRef.current) {
+        Blockly.svgResize(workspaceRef.current)
+      }
     }
 
     const handleMouseUp = () => setIsResizing(false)
@@ -722,7 +724,9 @@ function App() {
       const maxPanelWidth = Math.max(minPanelWidth, bounds.width - minWorkspaceWidth)
       if (panelWidth > maxPanelWidth) {
         setPanelWidth(maxPanelWidth)
-        workspaceRef.current && Blockly.svgResize(workspaceRef.current)
+        if (workspaceRef.current) {
+          Blockly.svgResize(workspaceRef.current)
+        }
       }
     }
 

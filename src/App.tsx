@@ -446,10 +446,10 @@ function App() {
       zoom: {
         controls: true,
         wheel: true,
-        startScale: 0.9,
-        maxScale: 1.4,
-        minScale: 0.6,
-        scaleSpeed: 1.1,
+        startScale: 1.0,
+        maxScale: 2.0,
+        minScale: 0.3,
+        scaleSpeed: 1.05,
       },
       grid: {
         spacing: 30,

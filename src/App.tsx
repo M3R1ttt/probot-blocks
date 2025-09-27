@@ -11,6 +11,62 @@ import hljs from 'highlight.js/lib/core'
 import cpp from 'highlight.js/lib/languages/cpp'
 import 'highlight.js/styles/atom-one-dark.css'
 
+// Güvenli JSON parsing ve validasyon fonksiyonları
+const safeJsonParse = (text: string): any => {
+  try {
+    return JSON.parse(text, (key, value) => {
+      // Prototype pollution koruması
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        return undefined
+      }
+      return value
+    })
+  } catch {
+    return null
+  }
+}
+
+const hasPrototypePollution = (str: string): boolean => {
+  return str.includes('__proto__') || str.includes('constructor') || str.includes('prototype')
+}
+
+const isValidWorkspaceData = (data: any): boolean => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return false
+  }
+
+  // Blockly workspace'in temel yapısını kontrol et
+  const requiredFields = ['version', 'blocks']
+  const hasRequiredStructure = requiredFields.every(field =>
+    data.hasOwnProperty(field) && data[field] !== null
+  )
+
+  if (!hasRequiredStructure) {
+    return false
+  }
+
+  // Blocks array kontrolü
+  if (!Array.isArray(data.blocks)) {
+    return false
+  }
+
+  // Her block'un temel yapısını kontrol et
+  for (const block of data.blocks) {
+    if (!block || typeof block !== 'object' || typeof block.type !== 'string') {
+      return false
+    }
+
+    // Prototype pollution kontrolü
+    if (Object.keys(block).some(key =>
+      key === '__proto__' || key === 'constructor' || key === 'prototype'
+    )) {
+      return false
+    }
+  }
+
+  return true
+}
+
 const COOKIE_KEYS = {
   WORKSPACE: 'probot_workspace',
   PROJECT_NAME: 'probot_project_name',
@@ -480,8 +536,12 @@ function App() {
     const savedWorkspace = getCookie(COOKIE_KEYS.WORKSPACE)
     if (savedWorkspace) {
       try {
-        const workspaceData = JSON.parse(savedWorkspace)
-        Blockly.serialization.workspaces.load(workspaceData, workspace)
+        const workspaceData = safeJsonParse(savedWorkspace)
+        if (isValidWorkspaceData(workspaceData)) {
+          Blockly.serialization.workspaces.load(workspaceData, workspace)
+        } else {
+          console.warn('Geçersiz workspace verisi, yeni workspace oluşturuluyor')
+        }
       } catch (error) {
         console.warn('Kaydedilmiş workspace yüklenemedi:', error)
       }
@@ -636,14 +696,23 @@ function App() {
 
     try {
       const text = await file.text()
-      const data = JSON.parse(text)
-      const workspaceData = data?.workspace ?? data
+      const data = safeJsonParse(text)
 
-      if (data?.projectName && typeof data.projectName === 'string') {
+      if (!data || typeof data !== 'object') {
+        throw new Error('Geçersiz dosya formatı')
+      }
+
+      const workspaceData = data.workspace ?? data
+
+      if (!isValidWorkspaceData(workspaceData)) {
+        throw new Error('Geçersiz workspace verisi')
+      }
+
+      if (data.projectName && typeof data.projectName === 'string' && !hasPrototypePollution(data.projectName)) {
         setProjectName(data.projectName)
       }
 
-      if (data?.driverPassword && typeof data.driverPassword === 'string') {
+      if (data.driverPassword && typeof data.driverPassword === 'string' && !hasPrototypePollution(data.driverPassword)) {
         setDriverPassword(data.driverPassword.toUpperCase())
       }
 
